@@ -1,0 +1,36 @@
+#BSUB -P nph133
+#BSUB -J scn3d
+#BSUB -o scn3d%J.o
+#BSUB -W 120
+#BSUB -nnodes 4
+
+cd ${HOME}/bb2nu_rl_dnn
+module -q restore system
+
+source /ccs/proj/nph133/software/setup_envnext.sh
+module list
+
+date
+hostname
+export NCCL_DEBUG=INFO
+export NCCL_P2P_DISABLE=1
+#HOSTS_STR=$(python get_hosts.py)
+#echo "$HOSTS_STR"
+
+export PAMI_ENABLE_STRIPING=1
+export PAMI_IBV_ADAPTER_AFFINITY=1
+export PAMI_IBV_DEVICE_NAME="mlx5_0:1,mlx5_3:1"
+export PAMI_IBV_DEVICE_NAME_1="mlx5_3:1,mlx5_0:1"
+
+#export HOROVOD_HIERARCHICAL_ALLREDUCE=2
+#export HOROVOD_GPU_ALLREDUCE=NCCL
+#export HOROVOD_TIMELINE=/ccs/home/echurch/dlpix-torch/hvd_timing.json
+#export CUDA_VISIBLE_DEVICES=0,1,2,3
+
+# note to run on 4 GPUs per node use jsrun -n arg, with arg=4*nnodes, with nnodes from above BSUB flag.
+jsrun -n 24 -a 1 -c 2 -g 1   python -m  run_training.py
+#jsrun -n 1 -a 1 -c 2 -g 1   python -m  run_score_new_events.py
+
+
+### that there are 54 summitdev nodes
+
